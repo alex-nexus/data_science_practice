@@ -3,7 +3,7 @@ import numpy as np
 class MatrixProcessor:
 
     def __init__(self):
-        self.num_row = 100
+        self.num_row = 10
         self.num_column = 100
 
         self.fname = "sample_data.csv"
@@ -30,22 +30,43 @@ class MatrixProcessor:
     def load_data_from_csv(self):
         #http://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
         self.load_data = np.loadtxt(self.fname, delimiter=',', skiprows=1, dtype='int')
-        print self.load_data       
-       
+        
+    def calculate_statistics(self):
+        self.overall_mean = np.mean(self.load_data)
+        
+        self.mean_per_column = np.mean(self.load_data, axis=0)
+        print 'mean_per_column:'+str(self.mean_per_column)
+                    
+        self.median_per_column = np.median(self.load_data, axis=0)
+        #print 'median_per_column:'+str(self.median_per_column)
+        
+        self.std_per_column = np.std(self.load_data, axis=0)
+        #print 'std_per_column:'+str(self.std_per_column)
+        
+        self.var_per_column = np.var(self.load_data, axis=0)
+        #print 'var_per_column:'+str(self.var_per_column)
+        
+        #print np.amin(self.load_data, axis=0)
+        #print np.amax(self.load_data, axis=0)
+    
     #mean centering for each feature
-    def base_mean(self):
-        print 'overall mean:' + str(np.mean(self.load_data))
-        mean_per_column = np.mean(self.load_data, axis=0)
-        print mean_per_column
-        self.load_data
-       
+    def center_mean(self):   
+        print 'center_mean'         
+        self.load_data = self.load_data - self.mean_per_column
+        print self.load_data
+                
     def normalize_std(self):
         print 'normalize_std'
-    
-
-
-
+        self.load_data = self.load_data / self.std_per_column
+        
+        self.std_per_column = np.std(self.load_data, axis=0)
+        print 'new std_per_column:'+str(self.std_per_column)
+        
+        #print self.load_data
+        
+        
 x = MatrixProcessor()
 x.load_data_from_csv()
-x.base_mean()
+x.calculate_statistics()
+x.center_mean()
 x.normalize_std()
