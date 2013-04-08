@@ -45,7 +45,9 @@ class MatrixProcessor:
         
         self.var_per_column = np.var(self.load_data, axis=0)
         #print 'var_per_column:'+str(self.var_per_column)
-        
+            
+        self.cov = np.cov(self.load_data.T)
+        print 'covariance matrix size:'+str(len(self.cov))+' '+str(self.cov)+''
         #print np.amin(self.load_data, axis=0)
         #print np.amax(self.load_data, axis=0)
     
@@ -53,7 +55,8 @@ class MatrixProcessor:
     def center_mean(self):   
         print 'center_mean'         
         self.load_data = self.load_data - self.mean_per_column
-        print self.load_data
+        
+        #print self.load_data
                 
     def normalize_std(self):
         print 'normalize_std'
@@ -61,12 +64,15 @@ class MatrixProcessor:
         
         self.std_per_column = np.std(self.load_data, axis=0)
         print 'new std_per_column:'+str(self.std_per_column)
-        
-        #print self.load_data
-        
+    
+    #print self.load_data
+    def play(self):        
+        for x in np.nditer(self.load_data):
+            print x    
         
 x = MatrixProcessor()
 x.load_data_from_csv()
 x.calculate_statistics()
 x.center_mean()
 x.normalize_std()
+#x.play()
