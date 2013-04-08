@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 class MatrixProcessor:
 
@@ -27,10 +28,18 @@ class MatrixProcessor:
         #write to body as csv
         np.savetxt(csvfile, sample_data, delimiter=',', fmt='%d')
         
+    #Reading in a CSV file    
     def load_data_from_csv(self):
         #http://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
         self.load_data = np.loadtxt(self.fname, delimiter=',', skiprows=1, dtype='int')
-        
+    
+    #Initial Processing
+    def initial_processing(self):
+       x.calculate_statistics()
+       x.center_mean()
+       x.normalize_std()
+       #x.play() 
+            
     def calculate_statistics(self):
         self.overall_mean = np.mean(self.load_data)
         
@@ -65,14 +74,10 @@ class MatrixProcessor:
         self.std_per_column = np.std(self.load_data, axis=0)
         print 'new std_per_column:'+str(self.std_per_column)
     
-    #print self.load_data
-    def play(self):        
-        for x in np.nditer(self.load_data):
-            print x    
+        
+    #Some Basic Description Statistics
+    def 
         
 x = MatrixProcessor()
 x.load_data_from_csv()
-x.calculate_statistics()
-x.center_mean()
-x.normalize_std()
-#x.play()
+x.initial_processing()
