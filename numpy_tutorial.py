@@ -3,13 +3,13 @@ import numpy as np
 class MatrixProcessor:
 
     def __init__(self):
-        self.num_row = 10
+        self.num_row = 100000
         self.num_column = 100
 
         self.fname = "sample_data.csv"
         
-        #sample_data = self.generate_sample_data()
-        #self.write_data_to_csv(sample_data)
+        sample_data = self.generate_sample_data()
+        self.write_data_to_csv(sample_data)
          
     def generate_sample_data(self):
         #write 1 line header
