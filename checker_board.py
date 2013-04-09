@@ -5,26 +5,32 @@ import matplotlib.cm as cm
 #import matplotlib.image as MPI
 
 class CheckerBoard:
-    def __init__(self, width_pixel=1600, length_pixel=800, num_block=8):
-        self.width_pixel = width_pixel
-        self.length_pixel = length_pixel
+    def __init__(self, r_pixel=800, c_pixel=800, num_block=8):
+        self.r_pixel = r_pixel
+        self.c_pixel = c_pixel
         self.num_block = num_block
-        self.width_block = self.width_pixel / num_block
-        self.length_block = self.length_pixel / num_block
+        self.r_block = self.r_pixel / num_block
+        self.c_block = self.c_pixel / num_block
+        
                         
-    def generate_pixels(self):
-        #all black to begin with
-        self.pixels = NP.zeros((self.length_pixel, self.width_pixel))
+    def generate_pixels1(self):
+        self.pixels = NP.zeros((self.c_pixel, self.r_pixel), dtype='bool')
+        #all black to begin with        
         for j in NP.arange(self.num_block):
             for i in NP.arange(self.num_block):
                 if (j + i ) % 2 == 1:
-                    self.pixels[j*self.length_block:(j+1)*self.length_block:1, i*self.width_block:(i+1)*self.width_block:1] = 1
-                        
+                    self.pixels[j*self.c_block:(j+1)*self.c_block:1, i*self.r_block:(i+1)*self.r_block:1] = 1
+                    
+    def generate_pixels2(self):
+        a = NP.fromfunction(lambda i, j: i % 200 < 100, (800, 800), dtype=int)
+        b = NP.fromfunction(lambda i, j: j % 200 < 100, (800, 800), dtype=int)
+        self.pixels = NP.zeros((self.c_pixel, self.r_pixel), dtype='bool') - a - b         
+                                
     def render(self):
         MPL.imshow(self.pixels, cmap = cm.gist_gray)
         MPL.show()
         
   
 cb = CheckerBoard()
-cb.generate_pixels()
+cb.generate_pixels2()
 cb.render()
