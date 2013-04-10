@@ -1,16 +1,10 @@
 import numpy as NP
 
 x = NP.random.randint(0,3,10)
-x = [1,2,2,2,1,1,1,0,0,1]
-diffs = NP.diff(NP.hstack(([0], x, [0])))
+x = [1,1,2,2,2,3,1,1,1,0,0,1]
 print x
-print diffs
 
-run_starts, = NP.where(diffs != 0)
-#run_ends, = NP.where(diffs == 0)
-
-print 'run starts'
-print run_starts 
+run_starts, = NP.where(NP.diff(NP.hstack(([0], x, [0]))) != 0)
 
 a = []
 for i in range(len(run_starts)-1):
