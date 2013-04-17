@@ -9,14 +9,21 @@ import nltk
 
 class SeoKeywords:
     def __init__(self):
-        self.db = MySQLdb.connect(host="localhost", user="king_app_dev", passwd="!ac-okl.34.731", db="king")
-        self.cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        self.connect_db()
 
         self.stemmer = LancasterStemmer()
         self.lemmatizer = WordNetLemmatizer()
 
         self.noun_dict = {}
         self.adj_dict ={}
+
+        self.punctuation = '!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'
+        self.filter_occurrence_threshold = 2
+        self.sample_rate = 10
+
+    def connect_db(self):
+        self.db = MySQLdb.connect(host="localhost", user="king_app_dev", passwd="!ac-okl.34.731", db="king")
+        self.cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
     def run(self):
         #gather product corpus per category
@@ -28,7 +35,7 @@ class SeoKeywords:
             for product in products:
                 pc+=1
 
-                if pc % 100 != 0:
+                if pc % self.sample_rate != 0:
                     continue
 
                 print pc
@@ -36,9 +43,8 @@ class SeoKeywords:
 
         print 'product count: '+str(pc)
 
-        self.nouns = [k for k, v in self.noun_dict.iteritems() if v > 2]
-        self.adjectives = [k for k, v in self.adj_dict.iteritems() if v > 2]
-
+        self.nouns = [k for k, v in self.noun_dict.iteritems() if v > self.filter_occurrence_threshold]
+        self.adjectives = [k for k, v in self.adj_dict.iteritems() if v > self.filter_occurrence_threshold]
 
         print 'nouns'
         print len(self.nouns)
@@ -49,8 +55,14 @@ class SeoKeywords:
         print self.adjectives
 
     def process_product(self, product):
+        #1
         sentence = self.clean_product_string(product)
-        nouns, adjectives = self.extract_nouns_and_adjectives(sentence)
+
+        #2
+        words = self.tokenize_sentence(sentence)
+
+        #3
+        nouns, adjectives = self.extract_nouns_and_adjectives(words)
 
         for noun in nouns:
             self.noun_dict[noun] = self.noun_dict.get(noun, 0) + 1
@@ -61,7 +73,7 @@ class SeoKeywords:
     #processing the corpus
     def clean_product_string(self, product):
         print 'clean_product_corpus:'
-        sentence = product['name'] + '\n' + product['description']
+        sentence = product['name'] #+ '\n' + product['description']
 
         #strip lines
         #sentence = " ".join(sentence.splitlines())
@@ -69,23 +81,26 @@ class SeoKeywords:
         sentence = " ".join([str(s) for s in BeautifulSoup(sentence).findAll(text=True)])
 
         #strip punctuations (translate is fastest)
-        punctuation = '!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'
-        sentence = sentence.translate(None, punctuation)
-        print sentence
+        sentence = sentence.translate(None, self.punctuation)
+
+        #TODO:filter more words
+
         return sentence
 
-
-    def extract_nouns_and_adjectives(self, sentence):
+    def tokenize_sentence(self, sentence):
+        print sentence
+        print '-->'
         #tokenize, lower case, remove stop words, lemmatize
         words = [self.lemmatizer.lemmatize(w.lower()) for w in nltk.word_tokenize(sentence) if w not in stopwords.words('english') ]
         #words = [self.stemmer.stem(w) for w in words]
+        return words
 
+    def extract_nouns_and_adjectives(self, words):
         tags = nltk.pos_tag(words)
         print tags
 
         nouns = set([t[0] for t in tags if t[1] in ['NN']])
         adjectives = set([t[0] for t in tags if t[1] in ['JJ']])
-        print nouns
         return (nouns, adjectives)
 
     #this return the categories with more than 10000 products
