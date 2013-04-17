@@ -1,4 +1,5 @@
 import MySQLdb
+import re, string
 from BeautifulSoup import BeautifulSoup
 from nltk.stem.lancaster import LancasterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
@@ -14,6 +15,8 @@ class SeoKeywords:
         self.stemmer = LancasterStemmer()
         self.lemmatizer = WordNetLemmatizer()
 
+        self.noun_dict = {}
+        self.adj_dict ={}
 
     def run(self):
         #gather product corpus per category
@@ -21,52 +24,69 @@ class SeoKeywords:
 
         for category_id in category_ids:
             products = self.get_products_by_category_id(category_id)
-
+            pc=0
             for product in products:
-                self.clean_product_corpus(product)
-                return
+                pc+=1
 
-            #identify adjective and noun
+                if pc % 100 != 0:
+                    continue
 
-            #permuate
+                print pc
+                self.process_product(product)
+
+        print 'product count: '+str(pc)
+
+        self.nouns = [k for k, v in self.noun_dict.iteritems() if v > 2]
+        self.adjectives = [k for k, v in self.adj_dict.iteritems() if v > 2]
+
+
+        print 'nouns'
+        print len(self.nouns)
+        print self.nouns
+
+        print 'adjectives'
+        print len(self.adjectives)
+        print self.adjectives
+
+    def process_product(self, product):
+        sentence = self.clean_product_string(product)
+        nouns, adjectives = self.extract_nouns_and_adjectives(sentence)
+
+        for noun in nouns:
+            self.noun_dict[noun] = self.noun_dict.get(noun, 0) + 1
+
+        for adjective in adjectives:
+            self.adj_dict[adjective] = self.adj_dict.get(adjective, 0) + 1
 
     #processing the corpus
-    def clean_product_corpus(self, product):
+    def clean_product_string(self, product):
         print 'clean_product_corpus:'
         sentence = product['name'] + '\n' + product['description']
 
-        print 'raw'
-        print sentence
-        #sentence = sentence.splitlines()
+        #strip lines
+        #sentence = " ".join(sentence.splitlines())
         #strip html
-        sentence = " ".join(BeautifulSoup(sentence).findAll(text=True))
+        sentence = " ".join([str(s) for s in BeautifulSoup(sentence).findAll(text=True)])
 
-        print 'processed'
+        #strip punctuations (translate is fastest)
+        punctuation = '!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'
+        sentence = sentence.translate(None, punctuation)
         print sentence
+        return sentence
 
-        #tokenize, lower case, remove stop words
-        words = [w.lower() for w in nltk.word_tokenize(sentence) if w not in stopwords.words('english') ]
-        words = [self.lemmatizer.lemmatize(w) for w in words]
-        print words
 
-        print 'tags'
+    def extract_nouns_and_adjectives(self, sentence):
+        #tokenize, lower case, remove stop words, lemmatize
+        words = [self.lemmatizer.lemmatize(w.lower()) for w in nltk.word_tokenize(sentence) if w not in stopwords.words('english') ]
+        #words = [self.stemmer.stem(w) for w in words]
+
         tags = nltk.pos_tag(words)
-        nouns = [t[0] for t in tags if t[1] in set(['NNP', 'NNS', 'NN', 'NP'])]
-        adjectives = [t[0] for t in tags if t[1] in set(['JJ'])]
+        print tags
 
-        print 'nouns'
+        nouns = set([t[0] for t in tags if t[1] in ['NN']])
+        adjectives = set([t[0] for t in tags if t[1] in ['JJ']])
         print nouns
-
-        print 'adjectives'
-        print adjectives
-
-        #
-        # print filtered_word_tokens
-
-
-        #clean by stem
-
-        #lemmatize
+        return (nouns, adjectives)
 
     #this return the categories with more than 10000 products
     def get_category_ids_with_many_products(self):
