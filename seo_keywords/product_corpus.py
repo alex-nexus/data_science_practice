@@ -17,6 +17,7 @@ class SeoKeywords:
         self.noun_dict = {}
         self.adj_dict ={}
 
+        #configuration
         self.punctuation = '!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'
         self.filter_occurrence_threshold = 2
         self.sample_rate = 10
@@ -78,7 +79,10 @@ class SeoKeywords:
         #strip lines
         #sentence = " ".join(sentence.splitlines())
         #strip html
-        sentence = " ".join([str(s) for s in BeautifulSoup(sentence).findAll(text=True)])
+
+        sentence = nltk.clean_html(sentence)
+
+        #sentence = " ".join([str(s) for s in BeautifulSoup(sentence).findAll(text=True)])
 
         #strip punctuations (translate is fastest)
         sentence = sentence.translate(None, self.punctuation)
