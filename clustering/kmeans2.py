@@ -1,37 +1,44 @@
 import numpy as NP
-import matplotlib
-matplotlib.use('Agg')
-from scipy.cluster.vq import *
-import pylab
-
+import math
 #generate 100 data points with 3 attributes
-data = NP.random.randint    (0, 255, 300).reshape(100, 3)
+data = NP.random.randint(0, 100, 300).reshape(100, 3)
+print 'data'
 print data
 
-pylab.close()
+k=3
 
-# generate 3 sets of normally distributed points around
-# different means with different variances
-pt1 = NP.random.normal(1, 0.2, (100,2))
-pt2 = NP.random.normal(2, 0.5, (300,2))
-pt3 = NP.random.normal(3, 0.3, (100,2))
+#initialization:pick 3 random centroids
+cs = NP.random.randint(0, data.shape[0], k)
+cxs = data[cs,:]
+print 'centroids'
+print cxs
 
-# slightly move sets 2 and 3 (for a prettier output)
-pt2[:,0] += 1
-pt3[:,0] -= 0.5
+dm = NP.zeros(data.shape)
+iter = 0
+while iter < 100:
+    old_cxs = NP.array(cxs, copy=True)
+    iter+=1
+    print iter
+    
+    #compute distance matrix
+    for i, cx in enumerate(cxs):
+        dm[:,i] = NP.sqrt(NP.sum((data-cx)**2, axis=1))
+        
+    #assign each points to a centroid
+    cls = NP.argmin(dm, axis=1)
+    #dm = NP.column_stack((dm, NP.argmin(dm, axis=1)))
+    print 'cls'
+    print cls
+    
+    #compute the new centroids
+    for i in range(k):
+        cxs[i, :] = NP.mean(dm[NP.where( cls == i), :], axis=1)
+    
+    print 'new cxs'
+    print cxs
+        
+    #print math.fabs(NP.sum(cxs - old_cxs))
+    print NP.fabs(cxs - old_cxs)
+    if NP.sum(NP.fabs(cxs - old_cxs)) < 4:
+        break 
 
-xy = NP.concatenate((pt1, pt2, pt3))
-
-# kmeans for 3 clusters
-res, idx = kmeans2(NP.array(zip(xy[:,0],xy[:,1])),3)
-
-colors = ([([0.4,1,0.4],[1,0.4,0.4],[0.1,0.8,1])[i] for i in idx])
-
-# plot colored points
-pylab.scatter(xy[:,0],xy[:,1], c=colors)
-
-# mark centroids as (X)
-pylab.scatter(res[:,0],res[:,1], marker='o', s = 500, linewidths=2, c='none')
-pylab.scatter(res[:,0],res[:,1], marker='x', s = 500, linewidths=2)
-
-pylab.savefig('/tmp/kmeans.png')

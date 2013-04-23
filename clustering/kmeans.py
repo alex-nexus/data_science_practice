@@ -5,8 +5,6 @@ from scipy.cluster.vq import *
 import pylab
 
 #generate 100 data points with 3 attributes
-data = NP.random.randint    (0, 255, 300).reshape(100, 3)
-print data
 
 pylab.close()
 
