@@ -8,16 +8,16 @@ import pylab
 #generate 100 data points with 3 attributes
 NP.set_printoptions(precision=3, linewidth=100, suppress=True)
 
-data_point = 10
+data_point = 1000
 dim = 2
-iter_max = 3
+iter_max = 100
 k = 3
-threshold = 3
+threshold = 0.01
 
 #generate data
-#data = 10 * NP.random.randn(data_point, 2)
+data = 10 * NP.random.randn(data_point, 2)
 
-data = NP.random.randint(0, 100, data_point * dim).reshape(data_point, dim)
+#data = NP.random.randint(0, 100, data_point * dim).reshape(data_point, dim)
 print 'data'
 print data
 
@@ -26,7 +26,7 @@ cs = NP.random.randint(0, data.shape[0], k)
 cs = range(k)
 cxs = NP.zeros((k, 2), dtype=NP.float)
 cxs = data[cs, :]
-print 'initial centorids'
+print 'initial centroids'
 print cxs
 
 dm = NP.zeros((data_point, k), dtype=NP.float)
@@ -34,31 +34,21 @@ iter = 0
 while iter < iter_max:
     old_cxs = NP.array(cxs, copy=True)
     iter += 1
-    print iter
 
     #compute distance matrix by broadcasting into an extra dimension
     dm = NP.sqrt(NP.sum((data.reshape(1, data_point, dim) - cxs.reshape(k, 1, dim)) ** 2, axis=2)).T
 
-    print 'dm'
-    print dm
     #cluster each points to a centroid
     cls = NP.argmin(dm, axis=1)
-    print 'clustering'
-    print cls
 
     #compute the new centroids
-    print 'compute new centroids'
     for i in range(k):
-        cxs[i, :] = NP.mean(dm[NP.where(cls == i), :], axis=1)[:, 0:2]
+        cxs[i, :] = NP.mean(data[NP.where(cls == i), :], axis=1)[:, 0:2]
 
-    print cxs
-
-    print 'threshold'
-    print NP.sum(NP.fabs(cxs - old_cxs))
+    print 'th: ' + str(NP.sum(NP.fabs(cxs - old_cxs)))
     if NP.sum(NP.fabs(cxs - old_cxs)) < threshold: break
 
-print 'return'
-print iter
+print str(iter) + ' iterations'
 print cxs
 
 #graph
